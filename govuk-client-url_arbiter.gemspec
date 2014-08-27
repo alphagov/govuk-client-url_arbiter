@@ -8,9 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Govuk::Client::UrlArbiter::VERSION
   spec.authors       = ["Alex Tomlins"]
   spec.email         = ["alex.tomlins@digital.cabinet-office.gov.uk"]
-  spec.summary       = %q{TODO: Write a short summary. Required.}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
-  spec.homepage      = ""
+  spec.summary       = %q{API client for the url-arbiter}
+  spec.homepage      = "https://github.com/alphagov/govuk-client-url_arbiter"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
