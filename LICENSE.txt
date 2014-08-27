@@ -1,4 +1,4 @@
-Copyright (c) 2014 Alex Tomlins
+Copyright (c) 2014 HM Government (Government Digital Service)
 
 MIT License
 
