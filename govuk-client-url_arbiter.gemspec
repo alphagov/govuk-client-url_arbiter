@@ -5,7 +5,7 @@ require 'govuk/client/url_arbiter/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "govuk-client-url_arbiter"
-  spec.version       = Govuk::Client::UrlArbiter::VERSION
+  spec.version       = GOVUK::Client::URLArbiter::VERSION
   spec.authors       = ["Alex Tomlins"]
   spec.email         = ["alex.tomlins@digital.cabinet-office.gov.uk"]
   spec.summary       = %q{API client for the url-arbiter}
