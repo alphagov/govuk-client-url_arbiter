@@ -1,3 +1,9 @@
+require 'rspec/core/rake_task'
+
+RSpec::Core::RakeTask.new(:spec)
+
+task :default => :spec
+
 require "gem_publisher"
 
 desc "Publish gem to RubyGems.org"
