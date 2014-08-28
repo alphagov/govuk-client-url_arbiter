@@ -1,8 +1,8 @@
 require "govuk/client/url_arbiter/version"
 
-module Govuk
+module GOVUK
   module Client
-    module UrlArbiter
+    module URLArbiter
       # Your code goes here...
     end
   end
