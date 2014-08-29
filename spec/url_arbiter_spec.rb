@@ -20,6 +20,7 @@ describe GOVUK::Client::URLArbiter do
         to_return(:status => 200, :body => json_data, :headers => {'Content-Type' => 'application/json'})
 
       response = client.path("/foo/bar")
+      expect(response).to be_a(GOVUK::Client::Response)
       expect(response).to eq({
         "path" => "/foo/bar",
         "publishing_app" => "foo_publisher",
@@ -61,5 +62,88 @@ describe GOVUK::Client::URLArbiter do
       }.to raise_error(GOVUK::Client::Errors::Timeout)
 
     end
+  end
+
+  describe "reserving a path" do
+    it "should reserve the path and return the details as a hash" do
+      json_data = <<-EOT
+{
+  "path": "/foo/bar",
+  "publishing_app": "foo_publisher",
+  "created_at": "2014-08-13T13:25:17.184Z",
+  "updated_at": "2014-08-13T13:25:17.184Z"
+}
+      EOT
+      stub_request(:put, "#{base_url}/paths/foo/bar").
+        with(:body => {"publishing_app" => "foo_publisher"}, :headers => {"Content-Type" => 'application/json'}).
+        to_return(:status => 201, :body => json_data, :headers => {'Content-Type' => 'application/json'})
+
+      response = client.reserve_path("/foo/bar", "publishing_app" => "foo_publisher")
+      expect(response).to be_a(GOVUK::Client::Response)
+      expect(response.code).to eq(201)
+      expect(response).to eq({
+        "path" => "/foo/bar",
+        "publishing_app" => "foo_publisher",
+        "created_at" => "2014-08-13T13:25:17.184Z",
+        "updated_at" => "2014-08-13T13:25:17.184Z"
+      })
+    end
+
+    it "should raise a conflict error if the path is already reserved" do
+      json_data = <<-EOT
+{
+  "path": "/foo/bar",
+  "publishing_app": "foo_publisher",
+  "created_at": "2014-08-13T13:25:17.184Z",
+  "updated_at": "2014-08-13T13:25:17.184Z",
+  "errors":{"base":["is already reserved by the 'bar_publisher' app"]}
+}
+      EOT
+      stub_request(:put, "#{base_url}/paths/foo/bar").
+        with(:body => {"publishing_app" => "foo_publisher"}, :headers => {"Content-Type" => 'application/json'}).
+        to_return(:status => 409, :body => json_data, :headers => {'Content-Type' => 'application/json'})
+
+      expect {
+        response = client.reserve_path("/foo/bar", "publishing_app" => "foo_publisher")
+      }.to raise_error(GOVUK::Client::Errors::Conflict) { |error|
+        expect(error.code).to eq(409)
+        expect(error.response).to eq({
+          "path" => "/foo/bar",
+          "publishing_app" => "foo_publisher",
+          "created_at" => "2014-08-13T13:25:17.184Z",
+          "updated_at" => "2014-08-13T13:25:17.184Z",
+          "errors" => { "base" => ["is already reserved by the 'bar_publisher' app"] },
+        })
+      }
+    end
+
+    it "should raise an unprocessable entity error if there are validation errors" do
+      json_data = <<-EOT
+{
+  "path":"/foo/bar",
+  "publishing_app":"",
+  "created_at":null,
+  "updated_at":null,
+  "errors":{"publishing_app":["can't be blank"]}
+}
+      EOT
+      stub_request(:put, "#{base_url}/paths/foo/bar").
+        with(:body => {"publishing_app" => ""}, :headers => {"Content-Type" => 'application/json'}).
+        to_return(:status => 422, :body => json_data, :headers => {'Content-Type' => 'application/json'})
+
+      expect {
+        response = client.reserve_path("/foo/bar", "publishing_app" => "")
+      }.to raise_error(GOVUK::Client::Errors::UnprocessableEntity) { |error|
+        expect(error.code).to eq(422)
+        expect(error.response).to eq({
+          "path" => "/foo/bar",
+          "publishing_app" => "",
+          "created_at" => nil,
+          "updated_at" => nil,
+          "errors" => { "publishing_app" => ["can't be blank"] },
+        })
+      }
+    end
+
   end
 end

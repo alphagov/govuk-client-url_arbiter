@@ -1,5 +1,7 @@
 require 'rest-client'
 
+require 'govuk/client/response'
+
 module GOVUK
   module Client
     module Errors
@@ -10,7 +12,14 @@ module GOVUK
       # @api private
       def self.create_for(restclient_exception)
         if restclient_exception.http_code
-          HTTPError.new(restclient_exception.message)
+          case restclient_exception.http_code
+          when 409
+            Conflict.new(restclient_exception)
+          when 422
+            UnprocessableEntity.new(restclient_exception)
+          else
+            HTTPError.new(restclient_exception)
+          end
         else
           case restclient_exception
           when RestClient::RequestTimeout
@@ -25,7 +34,27 @@ module GOVUK
 
       class Timeout < BaseError; end
 
-      class HTTPError < BaseError; end
+      class HTTPError < BaseError
+        # @api private
+        def initialize(restclient_exception)
+          super(restclient_exception.message)
+          @wrapped_exception = restclient_exception
+        end
+
+        # @return [Integer] The HTTP status code associated with this exception.
+        def code
+          @wrapped_exception.http_code
+        end
+
+        # @return [Response] The response that triggered this exception.
+        def response
+          @response ||= Response.new(code, @wrapped_exception.response)
+        end
+      end
+
+      class Conflict < HTTPError; end
+
+      class UnprocessableEntity < HTTPError; end
 
     end
   end
