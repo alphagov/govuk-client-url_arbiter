@@ -5,7 +5,7 @@ module GOVUK
     module Errors
 
       # Map rest-client exceptions onto our own exception hierarchy in order to
-      # insulate users from the details of the http library we're using.
+      # insulate users from the details of the HTTP library we're using.
       #
       # @api private
       def self.create_for(restclient_exception)
