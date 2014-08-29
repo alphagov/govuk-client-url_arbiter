@@ -8,10 +8,15 @@ module GOVUK
   module Client
     class URLArbiter
 
+      # @param base_url [String] the base URL for the service (eg http://url-arbiter.example.com).
       def initialize(base_url)
         @base_url = base_url
       end
 
+      # Fetch details of a path
+      #
+      # @param path [String] the path to fetch
+      # @return [Hash, nil] The response parsed into a hash, or nil if the path wasn't found.
       def path(path)
         get_json("/paths#{path}")
       end
