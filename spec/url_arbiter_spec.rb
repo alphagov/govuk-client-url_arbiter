@@ -145,5 +145,19 @@ describe GOVUK::Client::URLArbiter do
       }
     end
 
+    # FIXME: extract this test into separate unit tests for the generic JSON
+    # client stuff when that is extracted into a separate gem.
+    it "should handle error responses that don't include a JSON body" do
+      stub_request(:put, "#{base_url}/paths/foo/bar").
+        to_return(:status => 500, :body => "Computer says no!")
+
+      expect {
+        response = client.reserve_path("/foo/bar", "publishing_app" => "foo_publisher")
+      }.to raise_error(GOVUK::Client::Errors::HTTPError) { |error|
+        expect(error.code).to eq(500)
+        expect(error.response.raw_body).to eq("Computer says no!")
+        expect(error.response).to eq({})
+      }
+    end
   end
 end
