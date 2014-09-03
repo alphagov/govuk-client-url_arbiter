@@ -19,6 +19,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "rest-client", '~> 1.6'
   spec.add_dependency "multi_json", "~> 1.0"
+  spec.add_dependency "plek", '~> 1.8'
 
   spec.add_development_dependency "rake"
   spec.add_development_dependency "gem_publisher", "~> 1.4"
