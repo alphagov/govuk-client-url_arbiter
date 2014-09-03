@@ -1,32 +1,22 @@
 
 require "govuk/client/url_arbiter"
+require "govuk/client/test_helpers/url_arbiter"
 
 describe GOVUK::Client::URLArbiter do
+  include GOVUK::Client::TestHelpers::URLArbiter
 
   let(:base_url) { "http://url-arbiter.example.com" }
   let(:client) { GOVUK::Client::URLArbiter.new(base_url) }
 
   describe "fetching details of a reserved path" do
     it "should return the details as a hash" do
-      json_data = <<-EOT
-{
-  "path": "/foo/bar",
-  "publishing_app": "foo_publisher",
-  "created_at": "2014-08-13T13:25:17.184Z",
-  "updated_at": "2014-08-13T13:25:17.184Z"
-}
-      EOT
+      data = url_arbiter_data_for("/foo/bar")
       stub_request(:get, "#{base_url}/paths/foo/bar").
-        to_return(:status => 200, :body => json_data, :headers => {'Content-Type' => 'application/json'})
+        to_return(:status => 200, :body => data.to_json, :headers => {'Content-Type' => 'application/json'})
 
       response = client.path("/foo/bar")
       expect(response).to be_a(GOVUK::Client::Response)
-      expect(response).to eq({
-        "path" => "/foo/bar",
-        "publishing_app" => "foo_publisher",
-        "created_at" => "2014-08-13T13:25:17.184Z",
-        "updated_at" => "2014-08-13T13:25:17.184Z"
-      })
+      expect(response).to eq(data)
     end
 
     it "should return nil on 404" do
@@ -66,82 +56,46 @@ describe GOVUK::Client::URLArbiter do
 
   describe "reserving a path" do
     it "should reserve the path and return the details as a hash" do
-      json_data = <<-EOT
-{
-  "path": "/foo/bar",
-  "publishing_app": "foo_publisher",
-  "created_at": "2014-08-13T13:25:17.184Z",
-  "updated_at": "2014-08-13T13:25:17.184Z"
-}
-      EOT
+      data = url_arbiter_data_for("/foo/bar")
       stub_request(:put, "#{base_url}/paths/foo/bar").
         with(:body => {"publishing_app" => "foo_publisher"}, :headers => {"Content-Type" => 'application/json'}).
-        to_return(:status => 201, :body => json_data, :headers => {'Content-Type' => 'application/json'})
+        to_return(:status => 201, :body => data.to_json, :headers => {'Content-Type' => 'application/json'})
 
       response = client.reserve_path("/foo/bar", "publishing_app" => "foo_publisher")
       expect(response).to be_a(GOVUK::Client::Response)
       expect(response.code).to eq(201)
-      expect(response).to eq({
-        "path" => "/foo/bar",
-        "publishing_app" => "foo_publisher",
-        "created_at" => "2014-08-13T13:25:17.184Z",
-        "updated_at" => "2014-08-13T13:25:17.184Z"
-      })
+      expect(response).to eq(data)
     end
 
     it "should raise a conflict error if the path is already reserved" do
-      json_data = <<-EOT
-{
-  "path": "/foo/bar",
-  "publishing_app": "foo_publisher",
-  "created_at": "2014-08-13T13:25:17.184Z",
-  "updated_at": "2014-08-13T13:25:17.184Z",
-  "errors":{"base":["is already reserved by the 'bar_publisher' app"]}
-}
-      EOT
+      data = url_arbiter_data_for("/foo/bar").merge({
+        "errors" => {"base" => ["is already reserved by the 'bar_publisher' app"]},
+      })
       stub_request(:put, "#{base_url}/paths/foo/bar").
         with(:body => {"publishing_app" => "foo_publisher"}, :headers => {"Content-Type" => 'application/json'}).
-        to_return(:status => 409, :body => json_data, :headers => {'Content-Type' => 'application/json'})
+        to_return(:status => 409, :body => data.to_json, :headers => {'Content-Type' => 'application/json'})
 
       expect {
         response = client.reserve_path("/foo/bar", "publishing_app" => "foo_publisher")
       }.to raise_error(GOVUK::Client::Errors::Conflict) { |error|
         expect(error.code).to eq(409)
-        expect(error.response).to eq({
-          "path" => "/foo/bar",
-          "publishing_app" => "foo_publisher",
-          "created_at" => "2014-08-13T13:25:17.184Z",
-          "updated_at" => "2014-08-13T13:25:17.184Z",
-          "errors" => { "base" => ["is already reserved by the 'bar_publisher' app"] },
-        })
+        expect(error.response).to eq(data)
       }
     end
 
     it "should raise an unprocessable entity error if there are validation errors" do
-      json_data = <<-EOT
-{
-  "path":"/foo/bar",
-  "publishing_app":"",
-  "created_at":null,
-  "updated_at":null,
-  "errors":{"publishing_app":["can't be blank"]}
-}
-      EOT
+      data = url_arbiter_data_for("/foo/bar").merge({
+        "errors" => {"publishing_app" => ["can't be blank"]},
+      })
       stub_request(:put, "#{base_url}/paths/foo/bar").
         with(:body => {"publishing_app" => ""}, :headers => {"Content-Type" => 'application/json'}).
-        to_return(:status => 422, :body => json_data, :headers => {'Content-Type' => 'application/json'})
+        to_return(:status => 422, :body => data.to_json, :headers => {'Content-Type' => 'application/json'})
 
       expect {
         response = client.reserve_path("/foo/bar", "publishing_app" => "")
       }.to raise_error(GOVUK::Client::Errors::UnprocessableEntity) { |error|
         expect(error.code).to eq(422)
-        expect(error.response).to eq({
-          "path" => "/foo/bar",
-          "publishing_app" => "",
-          "created_at" => nil,
-          "updated_at" => nil,
-          "errors" => { "publishing_app" => ["can't be blank"] },
-        })
+        expect(error.response).to eq(data)
       }
     end
 
