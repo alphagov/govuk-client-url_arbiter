@@ -2,6 +2,7 @@ require "govuk/client/url_arbiter/version"
 require "govuk/client/response"
 require "govuk/client/errors"
 
+require "plek"
 require "rest-client"
 require "multi_json"
 
@@ -9,8 +10,11 @@ module GOVUK
   module Client
     class URLArbiter
 
-      # @param base_url [String] the base URL for the service (eg http://url-arbiter.example.com).
-      def initialize(base_url)
+      # @param base_url [String] the base URL for the service (eg
+      #   https://url-arbiter.example.com).  If unspecified, this will be
+      #   looked up with {https://github.com/alphagov/plek Plek}.
+      def initialize(base_url = nil)
+        base_url ||= Plek.new.find('url-arbiter')
         @base_url = URI.parse(base_url)
       end
 
