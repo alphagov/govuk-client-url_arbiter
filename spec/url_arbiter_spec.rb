@@ -19,6 +19,24 @@ describe GOVUK::Client::URLArbiter do
       expect(response).to eq(data)
     end
 
+    it "should raise an error if the path is nil" do
+      expect {
+        response = client.path(nil)
+      }.to raise_error(GOVUK::Client::Errors::BaseError)
+    end
+
+    it "should raise an error if the path is empty" do
+      expect {
+        response = client.path("")
+      }.to raise_error(GOVUK::Client::Errors::BaseError)
+    end
+
+    it "should raise an error if the path doesn't start with a slash" do
+      expect {
+        response = client.path("bacon")
+      }.to raise_error(GOVUK::Client::Errors::BaseError)
+    end
+
     it "should return nil on 404" do
       stub_request(:get, "#{base_url}/paths/foo/bar").
         to_return(:status => 404)
@@ -65,6 +83,24 @@ describe GOVUK::Client::URLArbiter do
       expect(response).to be_a(GOVUK::Client::Response)
       expect(response.code).to eq(201)
       expect(response).to eq(data)
+    end
+
+    it "should raise an error if the path is nil" do
+      expect {
+        response = client.reserve_path(nil, {})
+      }.to raise_error(GOVUK::Client::Errors::BaseError)
+    end
+
+    it "should raise an error if the path is empty" do
+      expect {
+        response = client.reserve_path("", {})
+      }.to raise_error(GOVUK::Client::Errors::BaseError)
+    end
+
+    it "should raise an error if the path doesn't start with a slash" do
+      expect {
+        response = client.reserve_path("bacon", {})
+      }.to raise_error(GOVUK::Client::Errors::BaseError)
     end
 
     it "should raise a conflict error if the path is already reserved" do
