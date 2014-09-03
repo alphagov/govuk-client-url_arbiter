@@ -43,7 +43,7 @@ module GOVUK
 
       def check_path(path)
         unless path && path.start_with?("/")
-          raise Errors::BaseError.new("Path cannot be blank")
+          raise ArgumentError, "Path must start with a '/'"
         end
       end
 

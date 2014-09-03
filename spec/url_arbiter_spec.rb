@@ -22,19 +22,19 @@ describe GOVUK::Client::URLArbiter do
     it "should raise an error if the path is nil" do
       expect {
         response = client.path(nil)
-      }.to raise_error(GOVUK::Client::Errors::BaseError)
+      }.to raise_error(ArgumentError)
     end
 
     it "should raise an error if the path is empty" do
       expect {
         response = client.path("")
-      }.to raise_error(GOVUK::Client::Errors::BaseError)
+      }.to raise_error(ArgumentError)
     end
 
     it "should raise an error if the path doesn't start with a slash" do
       expect {
         response = client.path("bacon")
-      }.to raise_error(GOVUK::Client::Errors::BaseError)
+      }.to raise_error(ArgumentError)
     end
 
     it "should return nil on 404" do
@@ -88,19 +88,19 @@ describe GOVUK::Client::URLArbiter do
     it "should raise an error if the path is nil" do
       expect {
         response = client.reserve_path(nil, {})
-      }.to raise_error(GOVUK::Client::Errors::BaseError)
+      }.to raise_error(ArgumentError)
     end
 
     it "should raise an error if the path is empty" do
       expect {
         response = client.reserve_path("", {})
-      }.to raise_error(GOVUK::Client::Errors::BaseError)
+      }.to raise_error(ArgumentError)
     end
 
     it "should raise an error if the path doesn't start with a slash" do
       expect {
         response = client.reserve_path("bacon", {})
-      }.to raise_error(GOVUK::Client::Errors::BaseError)
+      }.to raise_error(ArgumentError)
     end
 
     it "should raise a conflict error if the path is already reserved" do
