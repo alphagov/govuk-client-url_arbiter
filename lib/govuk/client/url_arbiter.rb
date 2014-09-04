@@ -23,6 +23,7 @@ module GOVUK
       # @param path [String] the path to fetch
       # @return [Response, nil] Details of the reserved path, or +nil+ if the path wasn't found.
       def path(path)
+        check_path(path)
         get_json("/paths#{path}")
       end
 
@@ -34,10 +35,17 @@ module GOVUK
       # @raise [Errors::Conflict] if the path is already reserved by another app.
       # @raise [Errors::UnprocessableEntity] for any validation errors.
       def reserve_path(path, details)
+        check_path(path)
         put_json!("/paths#{path}", details)
       end
 
       private
+
+      def check_path(path)
+        unless path && path.start_with?("/")
+          raise ArgumentError, "Path must start with a '/'"
+        end
+      end
 
       def get_json(path)
         response = RestClient.get(@base_url.merge(path).to_s)
