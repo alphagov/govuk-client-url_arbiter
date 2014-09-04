@@ -50,6 +50,21 @@ module GOVUK
             to_return(:status => 200, :body => data.to_json, :headers => {:content_type => "application/json"})
         end
 
+        # Stub out call to simulate url-arbiter returning a validation error
+        # for a given path.
+        #
+        # @param path [String] The path being reserved
+        # @param error_details [Hash{String => Array<String>}] Error details to be
+        #   returned in the stubbed response.  If unspecified, a generic error
+        #   message will be added.
+        def url_arbiter_returns_validation_error_for(path, error_details = nil)
+          error_details ||= {"base" => ["computer says no"]}
+          error_data = url_arbiter_data_for(path).merge("errors" => error_details)
+
+          stub_request(:put, "#{URL_ARBITER_ENDPOINT}/paths#{path}").
+            to_return(:status => 422, :body => error_data.to_json, :headers => {:content_type => "application/json"})
+        end
+
         # Generate sample url-arbiter data for a given path.
         #
         # @param path [String] The path being requested
