@@ -36,7 +36,7 @@ module GOVUK
         def url_arbiter_has_registration_for(path, publishing_app)
           data = url_arbiter_data_for(path, "publishing_app" => publishing_app)
           error_data = data.merge({
-            "errors" => {"base" => ["is already reserved by the #{publishing_app} application"]},
+            "errors" => {"path" => ["is already reserved by the #{publishing_app} application"]},
           })
 
           stub_request(:get, "#{URL_ARBITER_ENDPOINT}/paths#{path}").
