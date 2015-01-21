@@ -1,3 +1,4 @@
+require 'json'
 
 require "govuk/client/url_arbiter"
 require "govuk/client/test_helpers/url_arbiter"

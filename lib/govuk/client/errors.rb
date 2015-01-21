@@ -1,4 +1,4 @@
-require 'rest-client'
+require 'faraday'
 
 require 'govuk/client/response'
 
@@ -10,24 +10,31 @@ module GOVUK
       # insulate users from the details of the HTTP library we're using.
       #
       # @api private
-      def self.create_for(restclient_exception)
-        if restclient_exception.http_code
-          case restclient_exception.http_code
+      def self.create_for(faraday_exception)
+        if faraday_exception.response
+          case faraday_exception.response[:status]
           when 409
-            Conflict.new(restclient_exception)
+            Conflict.new(faraday_exception)
           when 422
-            UnprocessableEntity.new(restclient_exception)
+            UnprocessableEntity.new(faraday_exception)
           else
-            HTTPError.new(restclient_exception)
+            HTTPError.new(faraday_exception)
           end
         else
-          case restclient_exception
-          when RestClient::RequestTimeout
-            Timeout.new(restclient_exception.message)
+          case faraday_exception
+          when Faraday::TimeoutError
+            Timeout.new(faraday_exception.message)
           else
-            BaseError.new(restclient_exception.message)
+            BaseError.new(faraday_exception.message)
           end
         end
+      end
+
+      def self.ignoring_missing
+        yield
+      rescue HTTPError => e
+        raise unless [404, 410].include? e.code
+        nil
       end
 
       class BaseError < StandardError; end
@@ -36,19 +43,19 @@ module GOVUK
 
       class HTTPError < BaseError
         # @api private
-        def initialize(restclient_exception)
-          super(restclient_exception.message)
-          @wrapped_exception = restclient_exception
+        def initialize(faraday_exception)
+          super(faraday_exception.message)
+          @wrapped_exception = faraday_exception
         end
 
         # @return [Integer] The HTTP status code associated with this exception.
         def code
-          @wrapped_exception.http_code
+          @wrapped_exception.response[:status]
         end
 
         # @return [Response] The response that triggered this exception.
         def response
-          @response ||= Response.new(code, @wrapped_exception.response)
+          @response ||= Response.new(code, @wrapped_exception.response[:body])
         end
       end
 
