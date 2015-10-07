@@ -34,6 +34,8 @@ module GOVUK
 
       class Timeout < BaseError; end
 
+      class InvalidPath < BaseError; end
+
       class HTTPError < BaseError
         # @api private
         def initialize(restclient_exception)

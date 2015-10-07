@@ -22,7 +22,7 @@ module GOVUK
       #
       # @param path [String] the path to fetch
       # @return [Response, nil] Details of the reserved path, or +nil+ if the path wasn't found.
-      # @raise [ArgumentError] when called with an invalid path.
+      # @raise [Errors::InvalidPath] when called with an invalid path.
       def path(path)
         check_path(path)
         get_json("/paths#{path}")
@@ -35,7 +35,7 @@ module GOVUK
       # @return [Response] Details of the reserved path.
       # @raise [Errors::Conflict] if the path is already reserved by another app.
       # @raise [Errors::UnprocessableEntity] for any validation errors.
-      # @raise [ArgumentError] when called with an invalid path.
+      # @raise [Errors::InvalidPath] when called with an invalid path.
       def reserve_path(path, details)
         check_path(path)
         put_json!("/paths#{path}", details)
@@ -45,7 +45,7 @@ module GOVUK
 
       def check_path(path)
         unless path && path.start_with?("/")
-          raise ArgumentError, "Path must start with a '/'"
+          raise Errors::InvalidPath, "Path must start with a '/'"
         end
       end
 
