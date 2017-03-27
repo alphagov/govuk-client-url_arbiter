@@ -22,7 +22,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency "plek", '~> 1.8'
 
   spec.add_development_dependency "rake"
-  spec.add_development_dependency "gem_publisher", "~> 1.4"
   spec.add_development_dependency "rspec", "~> 3.0"
-  spec.add_development_dependency "webmock", "~> 1.18.0"
+  spec.add_development_dependency "webmock", "~> 2.3.2"
 end
