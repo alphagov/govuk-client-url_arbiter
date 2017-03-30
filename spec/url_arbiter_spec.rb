@@ -1,6 +1,7 @@
 
 require "govuk/client/url_arbiter"
 require "govuk/client/test_helpers/url_arbiter"
+require "json"
 
 describe GOVUK::Client::URLArbiter do
   include GOVUK::Client::TestHelpers::URLArbiter
